@@ -1,5 +1,6 @@
 use std::num::ParseIntError;
 use std::str::FromStr;
+use std::collections::HashMap;
 
 #[derive(Debug,PartialEq)]
 struct Claim {
@@ -35,6 +36,65 @@ impl FromStr for Claim {
     }
 }
 
+#[test]
+fn test_overlapping_claims_total_sq_inches(){
+    let claims = vec![
+        Claim {id: 1, x: 1, y: 3, width: 4, height: 4},
+        Claim {id: 2, x: 3, y: 1, width: 4, height: 4},
+        Claim {id: 3, x: 5, y: 5, width: 2, height: 2},
+    ];
+    assert_eq!(4, overlapping_sq_inches(&claims));
+}
+fn overlapping_sq_inches(claims: &Vec<Claim>) -> i32 {
+    let grid = populate_grid(claims);
+    grid.values().filter(|x| **x > 1).count() as i32
+}
+
+fn populate_grid(claims: &Vec<Claim>) -> HashMap<(i32, i32), i32> {
+    let mut grid = HashMap::new();
+    for claim in claims {
+        for x in claim.x..(claim.x + claim.width) {
+            for y in claim.y..(claim.y + claim.height) {
+                *grid.entry((x,y)).or_insert(0) += 1;
+            }
+        }
+    }
+    grid
+}
+
+#[test]
+fn test_find_non_overlapping_claim(){
+    let claims = vec![
+        Claim {id: 1, x: 1, y: 3, width: 4, height: 4},
+        Claim {id: 2, x: 3, y: 1, width: 4, height: 4},
+        Claim {id: 3, x: 5, y: 5, width: 2, height: 2},
+    ];
+    assert_eq!(3, find_non_overlapping_claim(&claims));
+}
+fn find_non_overlapping_claim(claims: &Vec<Claim>) -> i32 {
+    let grid = populate_grid(&claims);
+    for claim in claims {
+        let mut overlapping = 0;
+        for x in claim.x..(claim.x + claim.width) {
+            for y in claim.y..(claim.y + claim.height) {
+                if *grid.get(&(x,y)).unwrap() > 1 {
+                    overlapping += 1;
+                }
+            }
+        }
+        if overlapping == 0 {
+            return claim.id
+        }
+    }
+    panic!("NO ANSWER FOUND");
+}
+
 fn main() {
-    println!("{:?}", "#123 @ 4,3: 5x2".parse::<Claim>().unwrap());
+    let claims = include_str!("input").trim()
+                                      .split("\n")
+                                      .map(|x| x.parse::<Claim>().unwrap())
+                                      .collect::<Vec<Claim>>();
+
+    println!("Part1: Answer is {}", overlapping_sq_inches(&claims));
+    println!("Part2: Answer is {}", find_non_overlapping_claim(&claims));
 }
