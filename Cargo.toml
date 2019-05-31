@@ -5,6 +5,7 @@ authors = ["Owen Tuz <owen@segfault.re>"]
 edition = "2018"
 
 [dependencies]
+regex="1"
 
 [lib]
 name="util"
