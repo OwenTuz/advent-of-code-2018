@@ -22,6 +22,8 @@ enum Action {
     ParsingError,
 }
 
+type GuardFreqMap = std::collections::BTreeMap<i32, std::collections::BTreeMap<i32,i32>>;
+
 fn parse_input(input: Vec<&str>) -> Vec<Activity> {
     let mut sorted_input = input.to_vec();
     sorted_input.sort();
@@ -57,7 +59,7 @@ fn parse_input(input: Vec<&str>) -> Vec<Activity> {
 }
 
 fn map_sleep_times(input: Vec<Activity>)
-    -> std::collections::BTreeMap<i32, std::collections::BTreeMap<i32,i32>>
+    -> GuardFreqMap
 {
     let mut sleep_times = BTreeMap::new();
 
@@ -86,14 +88,10 @@ fn map_sleep_times(input: Vec<Activity>)
     sleep_times
 }
 
-fn find_sleepiest_guard(
-    guard_activities: &std::collections::BTreeMap<i32, std::collections::BTreeMap<i32,i32>>
-    ) -> (i32, i32, i32) {
+fn find_sleepiest_guard(guard_activities: &GuardFreqMap) -> (i32, i32, i32) {
 
     let mut highest_mins_asleep: i32 = 0;
     let mut sleepiest_guard_id: i32 = 0;
-    let mut sleepiest_minute: i32 = 0;
-    let mut cur_high: i32 = 0;
 
     for guard_id in guard_activities.keys() {
         let total_mins_slept = *guard_activities.get(&guard_id).unwrap()
@@ -104,8 +102,16 @@ fn find_sleepiest_guard(
         }
     }
     let sleep_times = guard_activities.get(&sleepiest_guard_id).unwrap();
+    let sleepiest_minute = get_sleepiest_minute(sleep_times);
+
+    (sleepiest_guard_id, highest_mins_asleep, sleepiest_minute)
+}
+
+fn get_sleepiest_minute(freq_map: &std::collections::BTreeMap<i32,i32>) -> i32 {
+    let mut cur_high: i32 = 0;
+    let mut sleepiest_minute: i32 = 0;
     for i in 0..59 {
-        match sleep_times.get(&i) {
+        match freq_map.get(&i) {
             Some(x) if x > &cur_high => {
                 sleepiest_minute = i;
                 cur_high = *x;
@@ -113,19 +119,20 @@ fn find_sleepiest_guard(
             _ => {},
         }
     }
-    (sleepiest_guard_id, highest_mins_asleep, sleepiest_minute)
+    sleepiest_minute
 }
 
-fn part1(activities: Vec<Activity>) -> i32 {
+fn part1(sleep_times: &GuardFreqMap) -> i32 {
     let (id,
-        _total_mins_slept, // not used, but nice to know
-        sleepiest_minute) =  find_sleepiest_guard(&map_sleep_times(activities));
+         _total_mins_slept, // not used but nice to know
+         sleepiest_minute) =  find_sleepiest_guard(sleep_times);
     return id * sleepiest_minute
 }
-
 
 fn main() {
     let raw_input = include_str!("input");
     let activities = parse_input(util::input_string_to_str_vec(raw_input));
-    println!("Day1: Answer is: {}", part1(activities));
+    let sleep_times = map_sleep_times(activities);
+
+    println!("Day1: Answer is: {}", part1(&sleep_times));
 }
