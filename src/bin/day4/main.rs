@@ -129,10 +129,30 @@ fn part1(sleep_times: &GuardFreqMap) -> i32 {
     return id * sleepiest_minute
 }
 
+fn part2(sleep_times: &GuardFreqMap) -> i32 {
+    let mut high_score: i32 = 0;
+    let mut winning_id: i32 = 0;
+    let mut winning_minute: i32 =0;
+
+    for (id, freq_map) in sleep_times.iter() {
+        let candidate_min = get_sleepiest_minute(freq_map);
+        match freq_map.get(&candidate_min) {
+            Some(x) if x > &high_score => {
+                high_score = *x;
+                winning_minute = candidate_min;
+                winning_id = *id;
+            },
+            _ => {},
+        }
+    }
+    return winning_id * winning_minute
+}
+
 fn main() {
     let raw_input = include_str!("input");
     let activities = parse_input(util::input_string_to_str_vec(raw_input));
     let sleep_times = map_sleep_times(activities);
 
     println!("Day1: Answer is: {}", part1(&sleep_times));
+    println!("Day2: Answer is: {}", part2(&sleep_times));
 }
