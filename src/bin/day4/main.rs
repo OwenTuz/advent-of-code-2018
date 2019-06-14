@@ -86,8 +86,46 @@ fn map_sleep_times(input: Vec<Activity>)
     sleep_times
 }
 
+fn find_sleepiest_guard(
+    guard_activities: &std::collections::BTreeMap<i32, std::collections::BTreeMap<i32,i32>>
+    ) -> (i32, i32, i32) {
+
+    let mut highest_mins_asleep: i32 = 0;
+    let mut sleepiest_guard_id: i32 = 0;
+    let mut sleepiest_minute: i32 = 0;
+    let mut cur_high: i32 = 0;
+
+    for guard_id in guard_activities.keys() {
+        let total_mins_slept = *guard_activities.get(&guard_id).unwrap()
+                                               .get(&99).unwrap();
+        if total_mins_slept > highest_mins_asleep {
+            sleepiest_guard_id = *guard_id;
+            highest_mins_asleep = total_mins_slept;
+        }
+    }
+    let sleep_times = guard_activities.get(&sleepiest_guard_id).unwrap();
+    for i in 0..59 {
+        match sleep_times.get(&i) {
+            Some(x) if x > &cur_high => {
+                sleepiest_minute = i;
+                cur_high = *x;
+            },
+            _ => {},
+        }
+    }
+    (sleepiest_guard_id, highest_mins_asleep, sleepiest_minute)
+}
+
+fn part1(activities: Vec<Activity>) -> i32 {
+    let (id,
+        _total_mins_slept, // not used, but nice to know
+        sleepiest_minute) =  find_sleepiest_guard(&map_sleep_times(activities));
+    return id * sleepiest_minute
+}
+
+
 fn main() {
     let raw_input = include_str!("input");
     let activities = parse_input(util::input_string_to_str_vec(raw_input));
-    println!("Day1: Answer is:");
+    println!("Day1: Answer is: {}", part1(activities));
 }
