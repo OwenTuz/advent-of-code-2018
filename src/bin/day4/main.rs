@@ -153,6 +153,6 @@ fn main() {
     let activities = parse_input(util::input_string_to_str_vec(raw_input));
     let sleep_times = map_sleep_times(activities);
 
-    println!("Day1: Answer is: {}", part1(&sleep_times));
-    println!("Day2: Answer is: {}", part2(&sleep_times));
+    println!("Part 1: Answer is: {}", part1(&sleep_times));
+    println!("Part 2: Answer is: {}", part2(&sleep_times));
 }
